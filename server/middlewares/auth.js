@@ -9,7 +9,7 @@ exports.auth = async(req, res, next) =>{
     try { 
         
         // Extracting JWT from request cookies, body or header
-        const token = req.cookies.tokenCookie || req.body.token || req.header("Authorisation").replace("Bearer ", "");
+        const token = req.cookies.tokenCookie || req.body.token || req.header("Authorization").replace("Bearer ", "");
         //if token missing
         if(!token){
             return res.status(401).json({

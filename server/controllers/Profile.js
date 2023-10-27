@@ -152,6 +152,8 @@ exports.updateDisplayPicture = async (req, res) => {
         { image: image.secure_url },
         { new: true }
       )
+      //remove password from the fetched document becz we are sending this document in the response
+      updatedProfile.password = undefined;
       res.send({
         success: true,
         message: `Image Updated successfully`,
@@ -184,7 +186,7 @@ exports.getEnrolledCourses = async (req, res) => {
       if (!userDetails) {
         return res.status(400).json({
           success: false,
-          message: `Could not find user with id: ${userDetails}`,
+          message: `Could not find user with id: ${userId}`,
         })
       }
       return res.status(200).json({
