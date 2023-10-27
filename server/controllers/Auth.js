@@ -337,7 +337,7 @@ exports.changePassword = async(req, res)=>{
         //return response
         return res.status(200).json({
             success: true,
-            updatedDetails,
+            // updatedDetails,
             message: "Password updated successfully"
         })
     } catch (error) {
