@@ -25,7 +25,7 @@ function ProfileDropDown() {
         <img 
         src={user?.image}
         alt={`profile-${user?.firstName}`}
-        className='aspect-full w-[30px] rounded-full object-cover'
+        className='aspect-square w-[30px] rounded-full object-cover'
         />
 
         <AiOutlineCaretDown className='text-sm text-richblack-100'/>

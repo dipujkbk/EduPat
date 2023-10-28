@@ -141,7 +141,7 @@ function MyProfile() {
                         <div>
                             <p className="mb-2 text-sm text-richblack-600">Phone Number</p>
                             <p className="text-sm font-medium text-richblack-5">
-                                {!(user?.additionalDetails?.contactNumber) ? "Add Contact Number" : user?.additionalDetails?.contactNumber }
+                                {!(user?.additionalDetails?.contactNumber) ? "Add Contact Number" : "+" + user?.additionalDetails?.contactNumber }
                             </p>
                         </div>
 

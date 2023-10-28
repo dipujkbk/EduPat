@@ -47,6 +47,7 @@ exports.updateProfile = async (req, res) =>{
         }
         
         const updatedUserDetails = await User.findById(id).populate("additionalDetails").exec();
+        updatedUserDetails.password = undefined;
 
         //return response
         return res.status(200).json({
