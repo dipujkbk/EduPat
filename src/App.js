@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Error from "./pages/Error";
 import Contact from "./pages/Contact";
 import Settings from "./components/core/Dashboard/Settings/Settings";
+import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 
 
 function App() {
@@ -108,9 +109,20 @@ function App() {
                 }
               />
 
+              <Route 
+                path="/dashboard/enrolled-courses" 
+                element={
+                  <PrivateRoute>
+                    <EnrolledCourses/>
+                  </PrivateRoute>
+                }
+             />
+
 
 
           </Route>
+
+          
 
           <Route path="*" element={<Error/>}/>
 
