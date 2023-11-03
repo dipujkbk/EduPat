@@ -11,14 +11,21 @@ exports.createCourse = async (req, res)=>{
 
     try {
         //fetch data
-        let {courseName, courseDescription, whatYouWillLearn, price, category,status,tag,
-			instructions,} = req.body;
+        let {courseName, courseDescription, whatYouWillLearn, price, category,status,tag:_tag,
+			instructions:_instructions,} = req.body;
 
         //get thumbnail
         const thumbnail  = req.files.thumbnailImage;
 
+        // Convert the tag and instructions from stringified Array to Array
+        const tag = JSON.parse(_tag)
+        const instructions = JSON.parse(_instructions)
+
+        console.log("tag", tag)
+        console.log("instructions", instructions)
+
         //validation
-        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !category || !thumbnail){
+        if(!courseName || !courseDescription || !whatYouWillLearn || !price || !category || !thumbnail || !tag.length || !instructions.length){
             return res.status(400).json({
                 success: false,
                 message: "All Fields are required"
@@ -70,7 +77,7 @@ exports.createCourse = async (req, res)=>{
             thumbnail: thumbnailImage.secure_url,
             status,
             tag,
-            instructions: instructions,
+            instructions,
 
         })
 
@@ -101,6 +108,77 @@ exports.createCourse = async (req, res)=>{
             message: "Failed to create new course",
             error: error.message
         })
+    }
+}
+
+
+//Edit Course Details
+exports.editCourse = async (req, res) => {
+
+    try {
+        const {courseId} = req.body 
+        const updates = req.body
+
+        const course = await Course.findById(courseId)
+
+
+        if(!course) {
+            return res.status(404).json({
+                success: false,
+                message: "Course not found",
+            })
+        }
+
+        //If Thumbnail Image is found, update it
+        if (req.files) {
+            console.log("Thumbnail update")
+            const thumbnail = req.files.thumbnailImage
+            const thumbnailImage = await uploadImageToCloudinary(thumbnail, process.env.FOLDER_NAME)
+
+            course.thumbnail = thumbnailImage.secure_url
+        }
+
+        // Update only the fields that are present in the request body
+        for (const key in updates) {
+            if(updates.hasOwnProperty(key)) {
+
+                if(key === "tag" || key === "instructions") {
+                    course[key] = JSON.parse(updates[key])
+                }
+                else{
+                    course[key] = updates[key]
+                }
+            }
+
+        }
+
+        await course.save();
+
+        const updatedCourse = await Course.findOne({_id: courseId})
+            .populate({
+                path: "instructor",
+                populate: {
+                    path: "additionalDetails",
+                }
+            })
+            .populate("category")
+            .populate("ratingAndReviews")
+            .populate({
+                path: "courseContent",
+                populate: {
+                    path: "subsection",
+                },
+            })
+            .exec()
+
+            res.json({
+                success: true,
+                message: "Course updated successfully",
+                data: updatedCourse,
+            })
+
+    } catch (error) {
+        
     }
 }
 
@@ -160,8 +238,10 @@ exports.getCourseDetails = async(req, res)=>{
                                                                 .populate(
                                                                     {
                                                                         path: "courseContent",
+                                                                        // Find a course and populate the "subSection" field, excluding the "videoUrl" field
                                                                         populate: {
-                                                                            path: "subSection"
+                                                                            path: "subSection",
+                                                                            select:"-videoUrl",
                                                                         }
                                                                     }
                                                                 )
