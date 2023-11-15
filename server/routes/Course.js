@@ -9,6 +9,7 @@ const {
   createCourse,
   getAllCourses,
   getCourseDetails,
+  editCourse
 } = require("../controllers/Course")
 
 
@@ -49,6 +50,8 @@ const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth"
 
 // Courses can Only be Created by Instructors
 router.post("/createCourse", auth, isInstructor, createCourse)
+//Edit Course route
+router.post("/editCourse", auth, isInstructor, editCourse)
 //Add a Section to a Course
 router.post("/addSection", auth, isInstructor, createSection)
 // Update a Section

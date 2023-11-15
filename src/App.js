@@ -17,6 +17,7 @@ import Contact from "./pages/Contact";
 import Settings from "./components/core/Dashboard/Settings/Settings";
 import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import Cart from "./components/core/Dashboard/Cart/index"
+import AddCourse from "./components/core/Dashboard/AddCourse/index"
 import { useSelector } from "react-redux";
 import { ACCOUNT_TYPE } from "./utils/constants";
 
@@ -105,6 +106,21 @@ function App() {
                 path="/dashboard/settings" 
                 element={<Settings/>}
               />
+
+              {/* Route only for Instructor */}
+              {
+                user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
+                  <>
+                    <Route path="/dashboard/add-course" element={<AddCourse/>}/>
+                  </>
+                )
+              }
+
+              
+
+
+
+
 
               {/* Route only for Students */}
 

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 // Configuring dotenv to load environment variables from .env file
 require("dotenv").config();
-const User = require("../models/User")
+// const User = require("../models/User")
 
 //auth-->Authentication verify
 exports.auth = async(req, res, next) =>{
