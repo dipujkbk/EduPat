@@ -1,4 +1,5 @@
 const Section = require("../models/Section");
+const SubSection = require("../models/SubSection");
 const Course = require("../models/Course");
 
 exports.createSection = async(req, res) =>{
@@ -34,7 +35,7 @@ exports.createSection = async(req, res) =>{
         return res.status(200).json({
             success: true,
             message: "section created successfully",
-            updatedCourseDetails,
+            data: updatedCourseDetails
         })
     } catch (error) {
         return res.status(500).json({
@@ -50,7 +51,7 @@ exports.updateSection = async (req, res)=>{
 
     try {
         //data input
-        const {sectionName, sectionId} = req.body;
+        const {sectionName, sectionId, courseId} = req.body;
         //data validation
 
         if(!sectionName || !sectionId){
@@ -61,11 +62,18 @@ exports.updateSection = async (req, res)=>{
         }
         //update in db
         const updatedSectionDetails = await Section.findByIdAndUpdate(sectionId, {sectionName},{new: true});
+
+        const updatedCourseDetails = await Course.findById(courseId).populate({
+            path: "courseContent",
+            populate: {
+                path: "subSection",
+            },
+        })
         //return response
         return res.status(200).json({
             success: true,
             message: "section updated successfully",
-            updatedSectionDetails,
+            data: updatedCourseDetails,
         })
         
     } catch (error) {
@@ -85,7 +93,20 @@ exports.deleteSection = async(req, res) => {
         const {sectionId,courseId} = req.body
 
         //TODO-->do we need to the delete the entry in courseContent array in course schema?
-        const updatedCourse = await Course.findByIdAndUpdate(courseId, {$pull : {courseContent: sectionId}}, {new: true})
+        const updatedCourse = await Course.findByIdAndUpdate(courseId, {$pull : {courseContent: sectionId}}, {new: true}).populate({
+            path: "courseContent",
+            populate: {
+                path:"subSection",
+            }
+
+        })
+        .exec();
+
+        const section = await Section.findById(sectionId)
+
+        //delete all the subsections related to this section
+        /*The $in operator is used to match any documents where the _id is in the array section.subSection */
+        await SubSection.deleteMany({_id: {$in : section.subSection}}); 
 
         //delete the section
         await Section.findByIdAndDelete(sectionId);
@@ -93,7 +114,7 @@ exports.deleteSection = async(req, res) => {
         return res.status(200).json({
             success: true,
             message: "Section deleted successfully",
-            updatedCourse,
+            data: updatedCourse,
         })
         
     } catch (error) {

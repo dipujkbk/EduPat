@@ -127,7 +127,6 @@ function CourseInformationForm() {
                     formData.append("thumbnailImage", data.courseImage)
                 }
 
-                console.log("after Editing,  Form data: ", formData)
 
                 setLoading(true);
                 const result = await editCourseDetails(formData, token);
@@ -292,7 +291,7 @@ function CourseInformationForm() {
         <ChipInput
             label="Tags"
             name="courseTags"
-            placeholder="Enter Tags and press Enter ↵"
+            placeholder="Enter Tags and press Comma , or Enter ↵"
             register={register}
             errors={errors}
             setValue={setValue}
@@ -343,7 +342,7 @@ function CourseInformationForm() {
         />
 
         {/* Next button   */}
-        <div className='flex justify-end'>
+        <div className='flex justify-end space-x-2'>
                 {
                     editCourse && (
                         <button 

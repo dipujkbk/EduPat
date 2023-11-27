@@ -271,3 +271,8 @@ exports.getCourseDetails = async(req, res)=>{
         
     }
 }
+
+
+//ToDo:DeleteCourse
+
+//Get a list of Course for a given Instructor

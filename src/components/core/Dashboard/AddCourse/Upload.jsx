@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud } from "react-icons/fi"
+
 import "video-react/dist/video-react.css"
 import { Player } from "video-react"
 
@@ -67,11 +68,13 @@ function Upload({name, label, register, setValue, errors,
       </label>
 
       <div
-      className={`flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500 ${isDragActive ? "bg-richblack-600" : "bg-richblack-700"}`}
+      className={`${
+        isDragActive ? "bg-richblack-600" : "bg-richblack-700"
+      } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
       >
         {
           previewSource ? (
-            <div className='flex flex-col items-center'>
+            <div className='flex w-full flex-col p-6'>
               {
                 !video ? (
                   <img
@@ -79,7 +82,9 @@ function Upload({name, label, register, setValue, errors,
                   alt='priview'
                   className='h-full w-full rounded-md object-cover'
                   />
-                ) : (<Player aspectRatio='16:9' playsInline src={previewSource}/>)
+                ) : (
+                <Player aspectRatio="16:9" playsInline src={previewSource}/>
+                )
               }
 
               {!viewData && (
