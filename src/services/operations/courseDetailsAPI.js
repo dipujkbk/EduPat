@@ -90,7 +90,7 @@ export const editCourseDetails = async (data, token) => {
             contentType: "multipart/form-data",
             Authorization: `Bearer ${token}`
         })
-
+        
         console.log("EDIT COURSE API RESPONSE............", response)
 
         if(!response?.data?.success) {

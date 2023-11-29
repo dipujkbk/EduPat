@@ -118,6 +118,7 @@ exports.editCourse = async (req, res) => {
     try {
         const {courseId} = req.body 
         const updates = req.body
+        // console.log("Updates object in Edit course controller", updates);
 
         const course = await Course.findById(courseId)
 
@@ -166,7 +167,7 @@ exports.editCourse = async (req, res) => {
             .populate({
                 path: "courseContent",
                 populate: {
-                    path: "subsection",
+                    path: "subSection",
                 },
             })
             .exec()
@@ -178,6 +179,12 @@ exports.editCourse = async (req, res) => {
             })
 
     } catch (error) {
+        console.error(error)
+        res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+    })
         
     }
 }
