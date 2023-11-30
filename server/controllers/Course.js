@@ -2,6 +2,8 @@ const Course = require("../models/Course");
 const Category =  require("../models/Category");
 const User = require("../models/User");
 const {uploadImageToCloudinary} = require("../utils/imageUploader");
+const Section = require("../models/Section");
+const SubSection = require("../models/SubSection");
 
 
 
@@ -195,12 +197,18 @@ exports.editCourse = async (req, res) => {
 exports.getAllCourses = async (req, res)=>{
     try {
 
-        const allCourses = await Course.find({}, {courseName: true,
-                                                price: true,
-                                                instructor: true,
-                                                ratingAndReviews: true,
-                                                studentsEnrolled: true,
-                                                thumbnail: true,}).populate("instructor").exec();
+        const allCourses = await Course.find(
+            {status: "Published"}, 
+            {
+                courseName: true,
+                price: true,
+                instructor: true,
+                ratingAndReviews: true,
+                studentsEnrolled: true,
+                thumbnail: true,
+            })
+            .populate("instructor")
+            .exec();
 
         return res.status(200).json({
             success: true,
@@ -228,31 +236,25 @@ exports.getCourseDetails = async(req, res)=>{
         const {courseId} = req.body;
 
         //find course detail
-        const courseDetails = await Course.findById(courseId,).populate(
-                                                                        {
-                                                                            path: "instructor",
-                                                                            populate: {
-                                                                                path: "additionalDetails",
-                                                                            }
-                                                                        }
-                                                                    )
-                                                                .populate(
-                                                                    {
-                                                                        path: "category"
-                                                                    }
-                                                                )
-                                                                .populate("ratingAndReviews")
-                                                                .populate(
-                                                                    {
-                                                                        path: "courseContent",
-                                                                        // Find a course and populate the "subSection" field, excluding the "videoUrl" field
-                                                                        populate: {
-                                                                            path: "subSection",
-                                                                            select:"-videoUrl",
-                                                                        }
-                                                                    }
-                                                                )
-                                                                .exec();
+        const courseDetails = await Course.findById(courseId,)
+        .populate({
+            path: "instructor",
+            populate: {
+                path: "additionalDetails",
+            },
+        })
+        .populate("category")
+        .populate("ratingAndReviews")
+        .populate({
+            path: "courseContent",
+            // Find a course and populate the "subSection" field, excluding the "videoUrl" field
+            populate: {
+                path: "subSection",
+                select:"-videoUrl",
+            }
+        })
+        .exec();
+                                                               
 
         //validation
         if(!courseDetails){
@@ -261,6 +263,13 @@ exports.getCourseDetails = async(req, res)=>{
                 message: `Could not find the course with ${courseId}`
             })
         }
+
+        // if (courseDetails.status === "Draft") {
+        //   return res.status(403).json({
+        //     success: false,
+        //     message: `Accessing a draft course is forbidden`,
+        //   });
+        // }
 
         //return response
         return res.status(200).json({
@@ -281,5 +290,103 @@ exports.getCourseDetails = async(req, res)=>{
 
 
 //ToDo:DeleteCourse
+exports.deleteCourse = async (req, res) => {
+    try {
+        //retrive the course id, user id
+        const {courseId} = req.body;
+
+        //find the course
+        const course = await Course.findById(courseId);
+
+        if(!course) {
+            res.status(404).json({
+                success:false,
+                message: "Course not found"
+            })
+        }
+
+        //unenroll students from this course
+        const studentsEnrolled = course.studentsEnrolled
+
+        for(const studentId of studentsEnrolled) {
+            await User.findByIdAndUpdate(studentId, {
+                $pull: {courses: courseId},
+            })
+        }
+
+        //delete all the sections and subsections
+        const courseSections = course.courseContent
+
+        for(const sectionId of courseSections) {
+
+            //delete subsections of the section
+            const section = await Section.findById(sectionId);
+            if(section){
+                const subSections = section.subSection
+                for(const subSectionId of subSections){
+                    await SubSection.findByIdAndDelete(subSectionId)
+                }
+            }
+
+            //Delete the section
+            await Section.findByIdAndDelete(sectionId);
+        }
+
+        //remove the course entry from the instructor's course list
+        const instructorId = course.instructor;
+        await User.findByIdAndUpdate(instructorId, {
+            $pull: {courses: courseId}
+        });
+
+        //delete the course
+        await Course.findByIdAndDelete(courseId)
+
+
+        return res.status(200).json({
+            success: true,
+            message: "Course deleted successfully",
+          })
+
+    } catch (error) {
+
+        console.error(error)
+        return res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message,
+        })
+        
+    }
+}
 
 //Get a list of Course for a given Instructor
+exports.getInstructorCourses = async (req, res) => {
+
+    try{
+        // Get the instructor ID from the authenticated user or request body
+
+        const instructorId = req.user.id;
+
+        //find all the courses belonnging to the user
+
+        const instructorCourses = await Course.find({
+            instructor: instructorId}).sort({createdAt: -1})
+
+        //Return the instructor's courses
+        res.status(200).json({
+            success: true,
+            message: "Instructor Courses fetched successfully",
+            data: instructorCourses,
+        })
+    } catch(error) {
+
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve instructor courses",
+            error: error.message,
+        })
+
+    }
+    
+}
