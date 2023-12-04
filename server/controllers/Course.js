@@ -113,7 +113,6 @@ exports.createCourse = async (req, res)=>{
     }
 }
 
-
 //Edit Course Details
 exports.editCourse = async (req, res) => {
 
@@ -192,7 +191,6 @@ exports.editCourse = async (req, res) => {
 }
 
 
-
 //getAllCourses handler function
 exports.getAllCourses = async (req, res)=>{
     try {
@@ -227,7 +225,7 @@ exports.getAllCourses = async (req, res)=>{
     }
 }
 
-//getCourseDetails
+//getCourseDetails without the video url for a specific course
 
 exports.getCourseDetails = async(req, res)=>{
 
@@ -289,7 +287,7 @@ exports.getCourseDetails = async(req, res)=>{
 }
 
 
-//ToDo:DeleteCourse
+//DeleteCourse
 exports.deleteCourse = async (req, res) => {
     try {
         //retrive the course id, user id
@@ -389,4 +387,64 @@ exports.getInstructorCourses = async (req, res) => {
 
     }
     
+}
+
+//get full course details for a specific course
+exports.getFullCourseDetails = async(req, res) => {
+
+    try {
+        
+        const {courseId} = req.body;
+        // const userId = req.user.id;
+
+        const courseDetails = await Course.findById(courseId)
+        .populate(
+            {
+                path: "instructor",
+                populate: {
+                    path: "additionalDetails",
+                }
+            }
+        )
+        .populate({
+            path: "category"
+        })
+        .populate({
+            path: "ratingAndReviews"
+        })
+        .populate({
+            path: "courseContent",
+            populate: {
+                path: "subSection",
+            }
+        })
+        .exec();
+
+
+        if (!courseDetails) {
+            return res.status(400).json({
+              success: false,
+              message: `Could not find course with id: ${courseId}`,
+            })
+        }
+
+        // if (courseDetails.status === "Draft") {
+        //   return res.status(403).json({
+        //     success: false,
+        //     message: `Accessing a draft course is forbidden`,
+        //   });
+        // }
+
+        return res.status(200).json({
+            success: true,
+            data: courseDetails,
+        })
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+          }) 
+    }
 }
